@@ -1,0 +1,10 @@
+VERSION
+*.swp
+
+/obj/
+/bin/
+
+/platforms/
+
+/languages/*.qm
+

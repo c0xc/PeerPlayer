@@ -1,0 +1,28 @@
+PEERPLAYER - initial thoughts - 2022-04
+(original idea: mid 2021)
+
+DEPENDENCY HELL
+
+How to realize the player component? Which framework, which player?
+
+* no player at all, just configure the path to vlc and run it
+> not user-friendly, only as a last resort
+> automatic fallback if the player has been disabled during compilation
+* QtMultimedia
+> first of all, it requires plugins to be installed on the client! or else nothing will play
+> it is almost impossible to build Qt with multimedia support. even with a build that looks totally fine, it won't find the multimedia module when adding it to the pro file.
+* qt-vlc
+> seems appropriate at first - but is a third-party thing!
+> one more dependency that might fail
+> and it does fail: 	libVLCQtCore.so.1.2 => not found
+> static build fails too
+* how about a completely different language and platform like Electron?
+> nodejs would be interesting, but Electron is BLOATED!
+> I don't want to load a Chromium browser in the background
+> one major reason for the design decision was that LBRY's desktop client is slow and bloated due to Electron, it make my laptop's fan spin up which is annoying
+* vlc's libvlc
+> best choice: everyone has vlc (if you don't, you've done something wrong)
+> no plugins needed on the client, it just works!
+> no issues using / linking libvlc, it's in the repos, everywhere
+> only this one dependency for the player component, good
+

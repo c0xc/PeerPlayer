@@ -1,0 +1,15 @@
+PEERPLAYER
+==========
+
+Goal: Separate concerns... 1. Search videos (need: aggregator); 2. Find single video, with unique identifier; 3. PLAY VIDEO IN OWN APPLICATION; 4. redistribute, share video via Bittorrent
+
+1. Search / aggregator / Google replacement ... TODO
+2. Identify videos, e.g., size + md5 hash; video hosted on Peertube site A but also on Peertube site B should also be found/playable on B (once found) and even on C if site A disappears and it's reuploaded on C...
+  Problem: If the video is reencoded on upload, it's a different file with a different hash...
+  So either find a way to upload videos without them being reencoded - or...
+  Build some sort of index structure linking different video files.
+3./4. PEER PLAYER. IT SHOULD PLAY PEERTUBE VIDEOS (INPUT = PEERTUBE VIDEO URL) AND LATER, IT SHOULD REDISTRIBUTE, I.E., SHARE THOSE VIDEOS VIA BITTORRENT.
+4. IPFS support?
+
+
+

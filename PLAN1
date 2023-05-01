@@ -1,0 +1,20 @@
+PEERPLAYER - PLAN, AS OF 2022-03-27
+===================================
+
+1. PoC (proof of concept): Player widget - play MPEG videos from Peertube
+(from a Peertube server or rather: from a channel within an instance)
+Either directly, live, streamed; or from a local directory ("incoming"),
+which could later be used for sharing (Torrent etc.).
+
+2. Video (and audio!) search and overview widget:
+List all videos from a selected source - or from all subscribed channels!
+2.1 Peertube
+2.2 Odysee !
+
+3. More abstract channel / subscription features? + PLAN: LBRY...
+Integrate LBRY's blockchain?
+
+X. Share via: Bittorrent. donkey...
+
+
+
