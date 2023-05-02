@@ -1789,6 +1789,7 @@ VSite::globalVariables()
     vars["PAGE_INDEX"] = pageOffset();
     vars["PAGE_NUMBER"] = pageOffset() + 1;
     vars["PAGE_SIZE"] = pageSize();
+    vars["PAGE_OFFSET"] = pageOffset() * pageSize();
     qDebug() << this << "initializing global VARS" << _vars;
 
     QUrl api_url = siteUrl();

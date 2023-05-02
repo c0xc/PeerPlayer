@@ -1,0 +1,750 @@
+{
+  "Peertube": {
+    "api_endpoint_prefix": "/api/v1/",
+    "compatibility": [
+      {
+        "api": "config",
+        "dest": "config_hash"
+      },
+      {
+        "get": "config_hash.serverVersion",
+        "dest": "peertube_version"
+      },
+      {
+        "get": "config_hash.instance",
+        "dest": "instance_hash"
+      }
+    ],
+    "get_name": [
+      {
+        "api": "config",
+        "dest": "config_hash"
+      },
+      {
+        "get": "config_hash.instance",
+        "dest": "instance_hash"
+      },
+      {
+        "get": "instance_hash.name",
+        "dest": "name"
+      },
+      {
+        "return": "name"
+      }
+    ],
+    "extract_channel_name": [
+      {
+        "get": "URL",
+        "rx": ".*/video-channels/([^/]*).*$",
+        "dest": "url_channel_part"
+      },
+      {
+        "return": "url_channel_part"
+      }
+    ],
+    "get_channel": [
+      {
+        "get": "name",
+        "dest": "search_name"
+      },
+      {
+        "set": "video-channels/${search_name}",
+        "dest": "call"
+      },
+      {
+        "api": "${call}",
+        "dest": "res"
+      },
+      {
+        "get": "res.name"
+      },
+      {
+        "return": "res"
+      }
+    ],
+    "get_channel_videos": [
+      {
+        "get": "VARS.CHANNEL.name",
+        "rx": "(.+)",
+        "ignore": false,
+        "dest": "channel"
+      },
+      {
+        "set": "video-channels/${channel}/videos",
+        "dest": "call"
+      },
+      {
+        "api": "${call}",
+        "dest": "res"
+      },
+      {
+        "array": "res.data",
+        "debug": true,
+        "dest": "item"
+      },
+      {
+        "get": "item.thumbnailPath",
+        "dest": "item.thumbnail"
+      },
+      {
+        "get": "item.name",
+        "dest": "item.title"
+      },
+      {
+        "get": "item.description"
+      },
+      {
+        "set": "/videos/watch/${item.uuid}",
+        "dest": "item.url"
+      },
+      {
+        "!yield": "item",
+        "return-array": "item"
+      }
+    ],
+    "get_video_url": [
+      {
+        "if": "url",
+        "get": "url",
+        "rx": "([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+        "dest": "uuid"
+      },
+      {
+        "api": "videos/${uuid}",
+        "dest": "res"
+      },
+      {
+        "array": "res.files",
+        "dest": "item"
+      },
+      {
+        "get": "item.fileDownloadUrl",
+        "dest": "video_url1",
+        "debug": "print"
+      },
+      {
+        "http": "${video_url1}",
+        "debug": "print",
+        "type": "head",
+        "dest": "video_url_ok"
+      },
+      {
+        "return": "video_url1",
+        "if": "video_url_ok"
+      },
+      {
+        "array": "res.streamingPlaylists",
+        "dest": "playlist_item"
+      },
+      {
+        "array": "playlist_item.files",
+        "ignore": true,
+        "dest": "file_item"
+      },
+      {
+        "get": "file_item.fileDownloadUrl",
+        "ignore": true,
+        "dest": "video_url2",
+        "debug": "print"
+      },
+      {
+        "http": "${video_url2}",
+        "if": "video_url2",
+        "debug": "print",
+        "type": "head",
+        "TODO": "NOT WORKING",
+        "dest": "video_url_ok"
+      },
+      {
+        "return": "video_url2",
+        "if": "video_url_ok"
+      },
+      {
+        "continue": "item"
+      },
+      {
+        "continue": "playlist_item"
+      }
+    ],
+    "get_video_urls": [
+      {
+        "if": "!uuid",
+        "get": "url",
+        "rx": "([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+        "dest": "uuid"
+      },
+      {
+        "api": "videos/${uuid}",
+        "dest": "res"
+      },
+      {
+        "array": "res.files",
+        "debug": "print",
+        "dest": "item"
+      },
+      {
+        "get": "item.fileDownloadUrl",
+        "dest": "item.url",
+        "debug": "print"
+      },
+      {
+        "append": "item",
+        "dest": "video_items"
+      },
+      {
+        "continue": "item"
+      },
+      {
+        "array": "res.streamingPlaylists",
+        "dest": "playlist_item"
+      },
+      {
+        "array": "playlist_item.files",
+        "debug": "print",
+        "dest": "item"
+      },
+      {
+        "get": "item.fileDownloadUrl",
+        "dest": "item.url",
+        "debug": "print"
+      },
+      {
+        "append": "item",
+        "dest": "video_items"
+      },
+      {
+        "continue": "item"
+      },
+      {
+        "continue": "playlist_item"
+      },
+      {
+        "return": "video_items"
+      }
+    ]
+  },
+  "Odysee": {
+    "api_url": "https://api.na-backend.odysee.com/api/v1/proxy",
+    "api_url_old": "https://api.lbry.tv/api/v1/proxy",
+    "api_header": "Content-Type: application/json-rpc",
+    "compatibility": [
+      {
+        "match": "=",
+        "v": [
+          "DOMAIN",
+          "odysee.com"
+        ]
+      }
+    ],
+    "get_name": [
+      {
+        "set": "Odysee",
+        "dest": "name"
+      },
+      {
+        "return": "name"
+      }
+    ],
+    "extract_channel_name": [
+      {
+        "get": "URL",
+        "rx": "/@([\\w]+)(:[\\w]+)?$",
+        "dest": "url_channel_part",
+        "example": "https://odysee.com/@XYZ:0"
+      },
+      {
+        "return": "url_channel_part"
+      }
+    ],
+    "get_channel": [
+      {
+        "get": "name",
+        "rx": "@?([\\w:]+)",
+        "dest": "search_name"
+      },
+      {
+        "set": "@${search_name}",
+        "dest": "o_params.channel"
+      },
+      {
+        "set": "J: [\"release_time\"]",
+        "dest": "o_params.order_by"
+      },
+      {
+        "set": "claim_search",
+        "dest": "call_data.method"
+      },
+      {
+        "get": "o_params",
+        "dest": "call_data.params"
+      },
+      {
+        "api": "GET",
+        "data": "call_data",
+        "dest": "res",
+        "doc": "https://lbry.tech/api/sdk#claim_search"
+      },
+      {
+        "get": "res.result.items",
+        "dest": "item_list"
+      },
+      {
+        "array": "item_list",
+        "dest": "item"
+      },
+      {
+        "get": "item.signing_channel",
+        "dest": "res_channel"
+      },
+      {
+        "get": "res_channel.value",
+        "dest": "res_channel_v"
+      },
+      {
+        "get": "res_channel.name",
+        "rx": "@?([\\w:]+)",
+        "dest": "res_channel_v.name"
+      },
+      {
+        "get": "res_channel_v.title"
+      },
+      {
+        "return": "res_channel_v"
+      }
+    ],
+    "get_channel_videos": [
+      {
+        "get": "VARS.CHANNEL.name",
+        "rx": "@?([\\w:]+)",
+        "dest": "channel"
+      },
+      {
+        "set": "@${channel}",
+        "dest": "o_params.channel"
+      },
+      {
+        "set": "J: [\"release_time\"]",
+        "dest": "o_params.order_by"
+      },
+      {
+        "get": "PAGE_NUMBER",
+        "dest": "o_params.page"
+      },
+      {
+        "get": "PAGE_SIZE",
+        "dest": "o_params.page_size"
+      },
+      {
+        "set": "claim_search",
+        "dest": "call_data.method"
+      },
+      {
+        "get": "o_params",
+        "dest": "call_data.params"
+      },
+      {
+        "api": "GET",
+        "data": "call_data",
+        "dest": "res",
+        "doc": "https://lbry.tech/api/sdk#claim_search"
+      },
+      {
+        "get": "res.result.items",
+        "debug": true,
+        "dest": "item_list"
+      },
+      {
+        "array": "item_list",
+        "dest": "item"
+      },
+      {
+        "get": "item.permanent_url",
+        "rx": "\\w+://(.*)$",
+        "dest": "item.permanent_url_wo_prefix"
+      },
+      {
+        "set": "/${item.permanent_url_wo_prefix}",
+        "dest": "item.url"
+      },
+      {
+        "get": "item.value.thumbnail.url",
+        "dest": "item.thumbnail"
+      },
+      {
+        "get": "item.value.title",
+        "dest": "item.title"
+      },
+      {
+        "get": "item.value.description",
+        "dest": "item.description"
+      },
+      {
+        "!yield": "item",
+        "return-array": "item"
+      }
+    ],
+    "get_video_url": [
+      {
+        "example": "https://odysee.com/@TLAVagabond:5/Whitney-Webb-Interview-7-14-22:2",
+        "get": "url",
+        "rx": "https://odysee.com/(@[^/]+)/.*",
+        "ignore": true,
+        "dest": "xtracted_url_channel"
+      },
+      {
+        "if": "xtracted_url_channel",
+        "get": "url",
+        "rx": "https://odysee.com/@[^/]+/([^/]+)(:[0-9]+)?",
+        "ignore": true,
+        "dest": "xtracted_url_name"
+      },
+      {
+        "if": "!xtracted_url_channel",
+        "get": "url",
+        "rx": "https://odysee.com/.*([a-f0-9]{40})$",
+        "debug": true,
+        "dest": "xtracted_url_claim"
+      },
+      {
+        "if": "xtracted_url_channel",
+        "get": "xtracted_url_channel",
+        "dest": "o_params.channel"
+      },
+      {
+        "if": "xtracted_url_claim",
+        "debug": "stash",
+        "get": "xtracted_url_claim",
+        "dest": "o_params.claim_id"
+      },
+      {
+        "if": "xtracted_url_name",
+        "get": "xtracted_url_name",
+        "dest": "o_params.name"
+      },
+      {
+        "set": "claim_search",
+        "dest": "search_call_data.method"
+      },
+      {
+        "get": "o_params",
+        "debug": "stash",
+        "dest": "search_call_data.params"
+      },
+      {
+        "api": "GET",
+        "data": "search_call_data",
+        "dest": "claim_search_obj",
+        "doc": "https://lbry.tech/api/sdk#claim_search"
+      },
+      {
+        "if": "claim_search_obj",
+        "get": "claim_search_obj.result.items",
+        "dest": "claim_search_items"
+      },
+      {
+        "if": "claim_search_items",
+        "array": "claim_search_items",
+        "debug": true,
+        "dest": "claim_item"
+      },
+      {
+        "if": "claim_item",
+        "get": "claim_item.claim_id",
+        "dest": "claim_id"
+      },
+      {
+        "if": "claim_item",
+        "get": "claim_item.name",
+        "dest": "name"
+      },
+      {
+        "if": "claim_item",
+        "get": "claim_item.value.source.sd_hash",
+        "dest": "sd_hash"
+      },
+      {
+        "if": "value",
+        "get": "value.source.sd_hash",
+        "dest": "sd_hash"
+      },
+      {
+        "get": "sd_hash",
+        "rx": "^([\\w]{6})",
+        "dest": "sd_hash_6"
+      },
+      {
+        "set": "https://player.odycdn.com/api/v4/streams/free/${name}/${claim_id}/${sd_hash_6}",
+        "dest": "cdn_url",
+        "debug": "print"
+      },
+      {
+        "get": "cdn_url",
+        "dest": "item.url"
+      },
+      {
+        "get": "name",
+        "if": "name",
+        "dest": "item.file_title"
+      },
+      {
+        "return": "item"
+      },
+      {
+        "return": "cdn_url"
+      }
+    ]
+  },
+  "VK": {
+    "api_endpoint_prefix": "https://api.vk.com/method/",
+    "vars": {
+      "version": "5.131",
+      "ACCESS_TOKEN": ""
+    },
+    "auth_required": true,
+    "compatibility": [
+      {
+        "get": "DOMAIN",
+        "rx": "^(www\\.)?vk\\.(com|ru)$"
+      }
+    ],
+    "get_name": [
+      {
+        "set": "VK",
+        "dest": "name"
+      },
+      {
+        "return": "name"
+      }
+    ],
+    "extract_channel_name": [
+      {
+        "get": "URL",
+        "rx": "vk\\....?/([\\w]*)",
+        "dest": "url_channel_part"
+      },
+      {
+        "return": "url_channel_part"
+      }
+    ],
+    "get_access_token": [
+      {
+        "get": "VARS.ACCESS_TOKEN",
+        "ignore": true,
+        "debug": true,
+        "dest": "token"
+      },
+      {
+        "set": "${VARS.version}",
+        "dest": "params.v"
+      },
+      {
+        "set": "${token}",
+        "dest": "params.access_token",
+        "note": "blank on first call; may be expired"
+      },
+      {
+        "if": "token",
+        "api": "utils.getServerTime",
+        "form": "params",
+        "dest": "test_query_result"
+      },
+      {
+        "get": "test_query_result.response",
+        "ignore": true,
+        "debug": true,
+        "dest": "test_query_time"
+      },
+      {
+        "if": "test_query_time",
+        "return": "token"
+      },
+      {
+        "set": "https://oauth.vk.com/oauth/authorize?client_id=51472000&display=page&scope=video&response_type=token",
+        "dest": "auth_url"
+      },
+      {
+        "load_auth": "auth_url",
+        "dest": "auth_res"
+      },
+      {
+        "get": "auth_res",
+        "!return": "auth_res"
+      },
+      {
+        "get": "auth_res.url",
+        "rx": "access_token=([^&]+)",
+        "debug": true,
+        "dest": "token"
+      },
+      {
+        "get": "token",
+        "dest": "VARS.ACCESS_TOKEN"
+      },
+      {
+        "return": "token"
+      }
+    ],
+    "get_channel": [
+      {
+        "get": "name",
+        "dest": "search_name"
+      },
+      {
+        "action": "get_access_token",
+        "debug": "stash",
+        "auth": true,
+        "dest": "access_token"
+      },
+      {
+        "get": "access_token",
+        "debug": "stash",
+        "dest": "access_token2"
+      },
+      {
+        "get": "access_token",
+        "rx": "^(.+)$"
+      },
+      {
+        "set": "${VARS.version}",
+        "dest": "params.v"
+      },
+      {
+        "set": "${access_token}",
+        "dest": "params.access_token"
+      },
+      {
+        "set": "${search_name}",
+        "debug": true,
+        "dest": "params.group_ids"
+      },
+      {
+        "api": "groups.getById",
+        "!debug": "print",
+        "form": "params",
+        "dest": "res",
+        "doc": "https://dev.vk.com/method/groups.getById"
+      },
+      {
+        "array": "res.response",
+        "dest": "result_item"
+      },
+      {
+        "if": "result_item",
+        "get": "result_item.name",
+        "dest": "result_item.title"
+      },
+      {
+        "if": "result_item",
+        "get": "result_item.photo_200",
+        "dest": "result_item.photo"
+      },
+      {
+        "if": "result_item",
+        "return": "result_item"
+      }
+    ],
+    "get_channel_videos": [
+      {
+        "get": "VARS.CHANNEL",
+        "ignore": true,
+        "dest": "CHANNEL"
+      },
+      {
+        "get": "CHANNEL.id",
+        "dest": "channel_id",
+        "req": "get_channel_name"
+      },
+      {
+        "action": "get_access_token",
+        "auth": true,
+        "dest": "access_token"
+      },
+      {
+        "set": "${VARS.version}",
+        "dest": "params.v"
+      },
+      {
+        "set": "${access_token}",
+        "dest": "params.access_token"
+      },
+      {
+        "set": "-${channel_id}",
+        "dest": "params.owner_id"
+      },
+      {
+        "get": "PAGE_OFFSET",
+        "dest": "params.offset"
+      },
+      {
+        "get": "PAGE_SIZE",
+        "dest": "params.count"
+      },
+      {
+        "api": "video.get",
+        "form": "params",
+        "dest": "res"
+      },
+      {
+        "array": "res.response.items",
+        "dest": "item"
+      },
+      {
+        "array": "item.image",
+        "dest": "img_item"
+      },
+      {
+        "get": "img_item.url",
+        "ignore": true,
+        "dest": "item.thumbnail"
+      },
+      {
+        "continue": "img_item"
+      },
+      {
+        "get": "item.player",
+        "ignore": true,
+        "dest": "item.url"
+      },
+      {
+        "get": "item.url",
+        "ignore": true,
+        "debug": "print",
+        "rx": "^(.+)(&api_hash=\\w+)",
+        "dest": "item.url2"
+      },
+      {
+        "if": "item.url2",
+        "get": "item.url2",
+        "ignore": true,
+        "dest": "item.url"
+      },
+      {
+        "get": "item",
+        "dest": "item2"
+      },
+      {
+        "return-array": "item"
+      }
+    ],
+    "normalize_video_url": [
+      {
+        "!example": "https://vk.com/video_ext.php?oid=-0&id=00&hash=beef&__ref=vk.api&api_hash",
+        "get": "URL",
+        "rx": "\\bid=([^&]+)\\b",
+        "dest": "id"
+      },
+      {
+        "get": "URL",
+        "rx": "\\boid=([^&]+)\\b",
+        "dest": "oid"
+      },
+      {
+        "set": "https://vk.com/video_ext.php?oid=${oid}&id=${id}",
+        "dest": "url2"
+      },
+      {
+        "return": "url2"
+      }
+    ]
+  }
+}
